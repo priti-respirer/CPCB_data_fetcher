@@ -1,4 +1,3 @@
-
 import pandas as pd
 import time
 from typing import Dict, Optional
@@ -21,27 +20,27 @@ def _clean_pollutant_name(p):
     )
 
 
-# ---------------- FIND COLUMN ----------------
-def _find_pollutant_col(df: pd.DataFrame, pollutant_code: str) -> Optional[str]:
-    p = pollutant_code.lower().strip()
+# ---------------- FIND COLUMN (SAFE) ----------------
+def _find_pollutant_col(df: pd.DataFrame, pollutant_code: str):
+    target = pollutant_code.lower().replace(" ", "")
     for col in df.columns:
-        if str(col).lower().startswith(p):
+        col_clean = str(col).lower().replace(" ", "")
+        if target in col_clean:
             return col
     return None
 
 
 # ---------------- RETRY LOGIC ----------------
 def _retry_fetch(**kwargs):
-    for attempt in range(MAX_RETRIES):
+    for _ in range(MAX_RETRIES):
         try:
-            df = fetch_csv(**kwargs)
-            return df
+            return fetch_csv(**kwargs)
         except Exception:
             time.sleep(1)
     return pd.DataFrame()
 
 
-# ---------------- MAIN PIPELINE ----------------
+# ---------------- MAIN FUNCTION ----------------
 def build_excel_for_request(
     catalog,
     start,
@@ -64,33 +63,27 @@ def build_excel_for_request(
 
     with pd.ExcelWriter(out_path, engine="openpyxl") as writer:
 
-        # ===================================================
-        # ================= INFO SHEET ======================
-        # ===================================================
-        # ===================================================
-# ================= INFO SHEET ======================
-# ===================================================
+        # =========================================================
+        # ======================= INFO SHEET ======================
+        # =========================================================
 
-# ---- Top Info (Start / End / Aggregation) ----
         info_top = pd.DataFrame([
             ["Start Date", start],
             ["End Date", end],
             ["Aggregation", aggregation],
         ], columns=["Parameter", "Value"])
 
-        info_top.to_excel(writer, sheet_name="INFO", index=False, startrow=0)
+        info_top.to_excel(writer, sheet_name="INFO", index=False)
 
         current_row = len(info_top) + 2
 
-
-        # ---- City + Station Count Table ----
+        # City Count Table
         city_counts = []
         station_columns = {}
 
         for city in cities:
-
             clean_city = city.split("(")[0].strip()
-            site_records = catalog.get_sites_for_city(city) or []
+            site_records = catalog.get_sites_for_city(city)
             stations = [r["Location"] for r in site_records]
 
             city_counts.append({
@@ -99,7 +92,6 @@ def build_excel_for_request(
             })
 
             station_columns[f"{clean_city} Stations"] = stations
-
 
         city_count_df = pd.DataFrame(city_counts)
 
@@ -112,8 +104,6 @@ def build_excel_for_request(
 
         current_row += len(city_count_df) + 3
 
-
-        # ---- Station Columns Section ----
         if station_columns:
 
             max_len = max(len(v) for v in station_columns.values())
@@ -130,9 +120,9 @@ def build_excel_for_request(
                 startrow=current_row
             )
 
-        # ===================================================
-        # ================= POLLUTANT LOOP ==================
-        # ===================================================
+        # =========================================================
+        # ================= POLLUTANT LOOP ========================
+        # =========================================================
 
         for pollutant in pollutants:
 
@@ -193,7 +183,10 @@ def build_excel_for_request(
                     continue
 
                 combined = pd.concat(all_station_frames, ignore_index=True)
+
                 pollutant_col = _find_pollutant_col(combined, pollutant)
+                if pollutant_col is None:
+                    continue
 
                 city_df = (
                     combined.groupby("dt_time", as_index=False)[pollutant_col]
@@ -205,15 +198,16 @@ def build_excel_for_request(
                 concentration_dict[clean_city] = city_df.set_index("dt_time")
                 uptime_dict[clean_city] = station_uptime_rows
 
-
-            # ---------------- CONCENTRATION SHEET ----------------
-
+            # ---------------- WRITE CONCENTRATION ----------------
             if concentration_dict:
 
                 wide = None
 
                 for city_name, df_city in concentration_dict.items():
-                    df_city = df_city.rename(columns={df_city.columns[0]: city_name})
+                    df_city = df_city.rename(columns={
+                        df_city.columns[0]: city_name
+                    })
+
                     if wide is None:
                         wide = df_city
                     else:
@@ -222,11 +216,13 @@ def build_excel_for_request(
                 wide = wide.sort_index()
                 wide = wide.reset_index().rename(columns={"dt_time": "Timestamp"})
 
-                wide.to_excel(writer, sheet_name=pollutant_clean[:31], index=False)
+                wide.to_excel(
+                    writer,
+                    sheet_name=pollutant_clean[:31],
+                    index=False
+                )
 
-
-            # ---------------- UPTIME SHEET ----------------
-
+            # ---------------- WRITE UPTIME ----------------
             if uptime_dict:
 
                 max_len = max(len(v) for v in uptime_dict.values())
