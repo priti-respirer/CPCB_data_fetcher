@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pandas
+numpy
+openpyxl
+httpx
+python-multipart
+pydantic
+python-dotenv

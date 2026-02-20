@@ -1,0 +1,142 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #1f4037, #99f2c8);
+}
+
+.dashboard {
+    width: 80%;
+    margin: 40px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+h1 {
+    text-align: center;
+    color: #1f4037;
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+.row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+input, select {
+    padding: 8px;
+    margin-top: 5px;
+}
+
+input[type="date"] {
+  padding: 6px;
+  font-size: 14px;
+}
+
+.dropdown {
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-top: 5px;
+    background: #fafafa;
+}
+
+.dropdown div {
+    padding: 6px;
+    cursor: pointer;
+}
+
+.dropdown div:hover {
+    background: #d1f0e8;
+}
+
+.selected-tags {
+    margin-top: 10px;
+}
+
+.tag {
+    display: inline-block;
+    background: #1f4037;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    margin: 5px 5px 0 0;
+}
+
+.tag span {
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+button {
+    padding: 10px 20px;
+    background: #1f4037;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  width: 350px;
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+}
+
+.modal-content button {
+  margin-top: 15px;
+  padding: 8px 20px;
+  border: none;
+  background-color: #1f4037;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+
+button:hover {
+    background: #16332d;
+}
+
+.hidden {
+    display: none;
+}
+
+#message {
+    margin-top: 10px;
+    font-weight: bold;
+}
+.remove-btn {
+  margin-left: 8px;
+  cursor: pointer;
+  color: red;
+  font-weight: bold;
+}
+

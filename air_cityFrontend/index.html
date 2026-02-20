@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>City Air Quality Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<!-- DOWNLOAD SUCCESS MODAL -->
+<div id="downloadModal" class="modal">
+  <div class="modal-content">
+    <h3>✅ Download Complete</h3>
+    <p>Your Excel file has been downloaded successfully.</p>
+    <button onclick="closeModal()">OK</button>
+  </div>
+</div>
+
+<body>
+<!-- <h1>City Air Quality Dashboard</h1> -->
+
+<div id="progressContainer" style="display:none;margin:15px 0;">
+  <div style="width:100%;background:#eee;height:20px;border-radius:5px;">
+    <div id="progressBar"
+         style="height:100%;width:0%;background:#1f4037;border-radius:5px;transition:width 0.4s ease;">
+    </div>
+  </div>
+</div>
+
+<div class="dashboard">
+
+    <h1>City Air Quality Dashboard</h1>
+
+    <!-- DATE SECTION -->
+    <div class="section row">
+
+        <div>
+            <label>Start Date (MM/DD/YYYY)</label>
+            <input type="date" id="startDate">
+            <input type="time" id="startTime" step="60">
+
+            <!-- <select id="startHour"></select>
+            <select id="startMinute"></select> -->
+        </div>
+
+        <div>
+            <label>End Date (MM/DD/YYYY)</label>
+            <input type="date" id="endDate">
+
+            <!-- <select id="endHour"></select>
+            <select id="endMinute"></select> -->
+            <input type="time" id="endTime" step="60">
+
+        </div>
+
+        <div>
+            <label>Aggregation</label>
+            <select id="aggregation">
+                <option value="15min">15 min interval </option>
+                <option value="hourly">Hourly</option>
+                <option value="daily">Daily</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+            </select>
+        </div>
+       
+
+    </div>
+
+    <!-- CITY SELECT -->
+    <div class="section">
+        <label>Select Cities</label>
+        <input type="text" id="citySearch" placeholder="Search city..." 
+               onkeyup="filterDropdown('citySearch','cityDropdown')">
+        <div id="cityDropdown" class="dropdown"></div>
+        <div id="selectedCities" class="selected-tags"></div>
+    </div>
+
+    <!-- POLLUTANT SELECT -->
+    <div class="section">
+        <label>Select Pollutants</label>
+        <input type="text" id="pollutantSearch" placeholder="Search pollutant..." 
+               onkeyup="filterDropdown('pollutantSearch','pollutantDropdown')">
+        <div id="pollutantDropdown" class="dropdown"></div>
+        <div id="selectedPollutants" class="selected-tags"></div>
+    </div>
+    <div style="margin:10px 0;">
+<div id="progressContainer" style="display:none;">
+    <div style="font-size:14px;margin-bottom:5px;">
+      Download Progress: <span id="progressText">0%</span>
+    </div>
+    <div style="width:100%;background:#eee;height:20px;border-radius:5px;">
+      <div id="progressBar"
+           style="height:100%;width:0%;background:#1f4037;border-radius:5px;transition:width 0.5s;"></div>
+    </div>
+  </div>
+</div>
+
+    <button id="exportBtn">Export Data</button>
+
+    <div id="loader" class="hidden">Processing...</div>
+    <div id="message"></div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
