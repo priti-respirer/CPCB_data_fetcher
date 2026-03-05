@@ -13,8 +13,9 @@ class SiteCatalog:
         missing = required - set(df.columns)
         if missing:
             raise ValueError(f"Excel missing required columns: {sorted(list(missing))}")
-
-        df["site_id"] = df["site_id"].astype(str).str.strip()
+        df["site_id"] = df["site_id"].str.replace(r"\.0$", "", regex=True)
+        
+        # df["site_id"] = df["site_id"].astype(str).str.strip()
         df["City"] = df["City"].astype(str).str.strip()
         df["Location"] = df["Location"].astype(str).str.strip()
 

@@ -1,3 +1,4 @@
+// script.js (UPDATED)
 
 const baseUrl = "http://127.0.0.1:8000";
 
@@ -34,7 +35,6 @@ window.onload = function () {
 };
 
 
-
 // -------------------- LOAD CITIES --------------------
 
 async function loadCities() {
@@ -55,7 +55,6 @@ async function loadCities() {
 }
 
 
-
 // -------------------- LOAD POLLUTANTS --------------------
 
 async function loadPollutants() {
@@ -72,7 +71,6 @@ async function loadPollutants() {
     "selectedPollutants"
   );
 }
-
 
 
 // -------------------- SEARCH FILTER --------------------
@@ -92,7 +90,6 @@ function filterDropdown(searchId, dropdownId) {
       : "none";
   }
 }
-
 
 
 // -------------------- MULTI SELECT --------------------
@@ -172,29 +169,34 @@ function escapeHtml(str) {
 }
 
 
-
 // -------------------- EXPORT HANDLER WITH PROGRESS --------------------
 
 async function handleExport() {
-
   try {
-
     const progressContainer = document.getElementById("progressContainer");
     const progressBar = document.getElementById("progressBar");
     const progressText = document.getElementById("progressText");
     const message = document.getElementById("message");
 
-    progressContainer.style.display = "block";
-    progressBar.style.width = "0%";
+    // reset UI at start
+    if (progressContainer) progressContainer.style.display = "block";
+    if (progressBar) progressBar.style.width = "0%";
     if (progressText) progressText.innerText = "0%";
-    message.innerHTML = "";
+    if (message) message.innerHTML = "";
 
     const aggregation = document.getElementById("aggregation").value;
     const startDate = document.getElementById("startDate").value;
     const startTime = document.getElementById("startTime").value;
     const endDate = document.getElementById("endDate").value;
     const endTime = document.getElementById("endTime").value;
+    const startDT = new Date(`${startDate}T${startTime}`);
+    const endDT = new Date(`${endDate}T${endTime}`);
 
+    if (startDT >= endDT) {
+      alert("Start date/time must be before End date/time");
+      resetProgressUI();
+      return;
+    }
     const payload = {
       start: `${startDate}T${startTime}`,
       end: `${endDate}T${endTime}`,
@@ -204,7 +206,7 @@ async function handleExport() {
       gaps: 1,
       gap_value: "NULL"
     };
-
+    
     const response = await fetch(`${baseUrl}/export`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -216,18 +218,28 @@ async function handleExport() {
     const filePath = result.file_path;
 
     const interval = setInterval(async () => {
-
       const prog = await fetch(`${baseUrl}/progress/${jobId}`);
       const data = await prog.json();
 
-      progressBar.style.width = data.progress + "%";
+      // backend failure
+      if (data.error || data.progress === -1) {
+        clearInterval(interval);
+        alert("Export failed: " + (data.error || "Unknown error"));
+        resetProgressUI();
+        return;
+      }
+
+      // update progress
+      if (progressBar) progressBar.style.width = data.progress + "%";
       if (progressText) progressText.innerText = data.progress + "%";
 
-      if (data.progress >= 100) {
-
+      // download only at 100
+      if (data.progress === 100) {
         clearInterval(interval);
 
-        const download = await fetch(`${baseUrl}/download?file_path=${encodeURIComponent(filePath)}`);
+        const download = await fetch(
+          `${baseUrl}/download?file_path=${encodeURIComponent(filePath)}`
+        );
         const blob = await download.blob();
         const url = window.URL.createObjectURL(blob);
 
@@ -240,20 +252,15 @@ async function handleExport() {
 
         window.URL.revokeObjectURL(url);
 
-        showModal();
-
-        setTimeout(() => {
-          closeModal();
-        }, 3000);
+        showModal(); // user closes with ×
       }
-
     }, 1000);
 
   } catch (err) {
     alert("Error: " + err.message);
+    resetProgressUI();
   }
 }
-
 
 
 // -------------------- DOWNLOAD MODAL --------------------
@@ -266,4 +273,15 @@ function showModal() {
 function closeModal() {
   const modal = document.getElementById("downloadModal");
   if (modal) modal.style.display = "none";
+  resetProgressUI(); // reset to 0 when user clicks ×
+}
+
+function resetProgressUI() {
+  const progressContainer = document.getElementById("progressContainer");
+  const progressBar = document.getElementById("progressBar");
+  const progressText = document.getElementById("progressText");
+
+  if (progressBar) progressBar.style.width = "0%";
+  if (progressText) progressText.innerText = "0%";
+  if (progressContainer) progressContainer.style.display = "none";
 }

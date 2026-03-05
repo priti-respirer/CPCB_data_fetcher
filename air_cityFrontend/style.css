@@ -140,3 +140,17 @@ button:hover {
   font-weight: bold;
 }
 
+.modal-content {
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
